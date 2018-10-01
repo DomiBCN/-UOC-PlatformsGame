@@ -6,11 +6,14 @@ public class PlayerController : MonoBehaviour
 {
 
     public float rotationSpeed = 50;
-    public float linealSpeed = 1;
+    public float linealSpeed = 50;
+    public Transform backWheelPoint;
     public Transform backWheel;
+    public WheelJoint2D backWheelJoint;
     public delegate void eliminatedDelegate();
     public event eliminatedDelegate eliminated;
     public event eliminatedDelegate levelEnd;
+    
 
     private Rigidbody2D rigidBody;
     private float wheelRadius;
@@ -21,27 +24,43 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rigidBody = GetComponent<Rigidbody2D>();
-        wheelRadius = GetComponent<CircleCollider2D>().radius + 0.1f;
+        wheelRadius = backWheel.GetComponent<CircleCollider2D>().radius + 0.1f;
     }
     #region movement
-    public void MoveRight()
+
+    void Movement(bool isLeft)
     {
-        rigidBody.velocity += new Vector2(transform.right.x * linealSpeed, transform.right.y * linealSpeed) * Time.deltaTime;
+        int movement = 0;
+        if (isLeft) { movement = 1; } else { movement = -1; }
+
+        JointMotor2D motor = new JointMotor2D { motorSpeed = movement * linealSpeed, maxMotorTorque = 10 };
+        SetMotor(motor);
     }
 
-    public void MoveLeft()
-    {
-        rigidBody.velocity -= new Vector2(transform.right.x * linealSpeed, transform.right.y * linealSpeed) * Time.deltaTime;
-    }
+    //public void MoveRight()
+    //{
+    //    //rigidBody.velocity += new Vector2(transform.right.x * linealSpeed, transform.right.y * linealSpeed) * Time.deltaTime;
+    //    JointMotor2D motor = new JointMotor2D { motorSpeed = -1 * linealSpeed, maxMotorTorque = 10000 };
+    //    SetMotor(motor);
+    //}
+
+    //public void MoveLeft()
+    //{
+    //    //rigidBody.velocity -= new Vector2(transform.right.x * linealSpeed, transform.right.y * linealSpeed) * Time.deltaTime;
+    //    JointMotor2D motor = new JointMotor2D { motorSpeed = 1 * linealSpeed, maxMotorTorque = 10000 };
+    //    SetMotor(motor);
+    //}
 
     public void RotateRight()
     {
-        rigidBody.MoveRotation(rigidBody.rotation - rotationSpeed * Time.deltaTime);
+        //rigidBody.MoveRotation(rigidBody.rotation - rotationSpeed * Time.deltaTime);
+        rigidBody.AddTorque(-1 * rotationSpeed * Time.deltaTime);
     }
 
     public void RotateLeft()
     {
-        rigidBody.MoveRotation(rigidBody.rotation + rotationSpeed * Time.deltaTime);
+        //rigidBody.MoveRotation(rigidBody.rotation + rotationSpeed * Time.deltaTime);
+        rigidBody.AddTorque(1 * rotationSpeed * Time.deltaTime);
     }
     #endregion
     // Update is called once per frame
@@ -54,9 +73,14 @@ public class PlayerController : MonoBehaviour
         UpdateKeyboardAction(KeyCode.UpArrow);
         UpdateKeyboardAction(KeyCode.DownArrow);
         #endregion
+        
+    }
 
-        if (actions.Contains(KeyCode.RightArrow) && TouchingGround()) { MoveRight(); }
-        if (actions.Contains(KeyCode.LeftArrow) && TouchingGround()) { MoveLeft(); }
+    private void FixedUpdate()
+    {
+        //if (actions.Contains(KeyCode.RightArrow) && TouchingGround()) { MoveRight();}
+        //if (actions.Contains(KeyCode.LeftArrow) && TouchingGround()) { MoveLeft(); }
+        if (actions.Contains(KeyCode.RightArrow) || actions.Contains(KeyCode.LeftArrow)) { UseMotor(true); Movement(actions.Contains(KeyCode.LeftArrow)); } else { UseMotor(false); }
         if (actions.Contains(KeyCode.UpArrow)) { RotateRight(); }
         if (actions.Contains(KeyCode.DownArrow)) { RotateLeft(); }
     }
@@ -143,13 +167,16 @@ public class PlayerController : MonoBehaviour
         //It allows us to pass the same array for the results, with a given length(it won't be resized) and reuse it. 
 
         //if (Physics2D.OverlapCircleAll(backWheel.position, wheelRadius, 1 << LayerMask.NameToLayer("Terrain")).Length > 0)
-        if (Physics2D.OverlapCircleNonAlloc(backWheel.position, wheelRadius, overlapColliders, 1 << LayerMask.NameToLayer("Terrain")) > 0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return Physics2D.OverlapCircleNonAlloc(backWheelPoint.position, wheelRadius, overlapColliders, 1 << LayerMask.NameToLayer("Terrain")) > 0;
+    }
+
+    void UseMotor(bool use)
+    {
+        backWheelJoint.useMotor = use;
+    }
+
+    void SetMotor(JointMotor2D motor)
+    {
+        backWheelJoint.motor = motor;
     }
 }
