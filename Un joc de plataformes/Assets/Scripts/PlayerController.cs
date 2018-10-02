@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     public delegate void eliminatedDelegate();
     public event eliminatedDelegate eliminated;
     public event eliminatedDelegate levelEnd;
-    
+
 
     private Rigidbody2D rigidBody;
     private float wheelRadius;
@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rigidBody = GetComponent<Rigidbody2D>();
-        wheelRadius = backWheel.GetComponent<CircleCollider2D>().radius + 0.1f;
+        wheelRadius = backWheel.GetComponent<CircleCollider2D>().radius * 1.1f;
     }
     #region movement
 
@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour
         SetMotor(motor);
     }
 
+    #region obsolete movement
     //public void MoveRight()
     //{
     //    //rigidBody.velocity += new Vector2(transform.right.x * linealSpeed, transform.right.y * linealSpeed) * Time.deltaTime;
@@ -50,6 +51,7 @@ public class PlayerController : MonoBehaviour
     //    JointMotor2D motor = new JointMotor2D { motorSpeed = 1 * linealSpeed, maxMotorTorque = 10000 };
     //    SetMotor(motor);
     //}
+    #endregion
 
     public void RotateRight()
     {
@@ -73,7 +75,7 @@ public class PlayerController : MonoBehaviour
         UpdateKeyboardAction(KeyCode.UpArrow);
         UpdateKeyboardAction(KeyCode.DownArrow);
         #endregion
-        
+
     }
 
     private void FixedUpdate()

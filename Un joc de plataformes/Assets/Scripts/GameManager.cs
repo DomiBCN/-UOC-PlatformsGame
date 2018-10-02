@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     string level;
 
+    Rigidbody2D rigidBody;
     int secondsToStart = 3;
     Text mainText;
     float initialTime;
@@ -24,6 +26,7 @@ public class GameManager : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        rigidBody = player.GetComponent<Rigidbody2D>();
         player.eliminated += Restart;
         player.levelEnd += End;
         player.enabled = false;
@@ -61,15 +64,16 @@ public class GameManager : MonoBehaviour
     {
         if (player.enabled)
         {
-            mainText.text = "Tiempo: " + (Time.time - initialTime).ToString("##.##");
+            mainText.text = "Tiempo: " + Math.Round((Time.time - initialTime), 2).ToString("##.##");
         }
     }
 
     void End()
     {
         player.enabled = false;
+        rigidBody.constraints = RigidbodyConstraints2D.FreezeAll;
         finalTime = (Time.time - initialTime);
-        mainText.text = "Final! " + finalTime;
+        mainText.text = "Final! " + Math.Round(finalTime, 2);
         if (finalTime < bestTime || bestTime == 0) SetRecord(level, finalTime);
     }
 
