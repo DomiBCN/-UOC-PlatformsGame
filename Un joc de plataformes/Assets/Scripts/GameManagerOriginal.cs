@@ -5,39 +5,23 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour {
-
+public class GameManagerOriginal : MonoBehaviour
+{
     [SerializeField]
-    PlayerController player;
+    PlayerControllerOriginal player;
     [SerializeField]
     Text recordText;
     [SerializeField]
     Button startButton;
     [SerializeField]
     string level;
-    [SerializeField]
-    Transform levelContainer;
-    [SerializeField]
-    List<GameObject> levels = new List<GameObject>();
-    
-    [SerializeField]
-    GameObject pauseMenu;
 
-    int currentLevel;
     Rigidbody2D rigidBody;
     int secondsToStart = 3;
     Text mainText;
     float initialTime;
     float bestTime;
     float finalTime;
-    bool paused = false;
-
-    private void Awake()
-    {
-        currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
-        GameObject levelPrefab = Instantiate(levels[currentLevel]);
-        levelPrefab.transform.SetParent(levelContainer);
-    }
 
     // Use this for initialization
     void Start()
@@ -47,52 +31,20 @@ public class GameManager : MonoBehaviour {
         player.levelEnd += End;
         player.enabled = false;
         mainText = startButton.GetComponentInChildren<Text>();
-        bestTime = GetBestTime(currentLevel);
+        bestTime = GetBestTime(level);
         if (bestTime > 0) { recordText.text = "Record: " + bestTime.ToString("##.##") + " s"; } else { recordText.enabled = false; }
-        //DEBUGGING
-        //StartGame();
     }
 
-    public void Pause()
+    void Restart()
     {
-        if (paused)
-        {
-            pauseMenu.SetActive(false);
-            setTimeScale(1);
-        }
-        else
-        {
-            setTimeScale(0);
-            pauseMenu.SetActive(true);
-        }
-        paused = !paused;
-    }
-
-    public void Restart()
-    {
-        if (paused)
-        {
-            //If Restart from pause menu, we need to set timeScale to 1. It's value doesn't reset on loadScene
-            setTimeScale(1);
-        }
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public void BackToMenu()
-    {
-        //If we Exit from pause menu, we need to set timeScale to 1. It's value doesn't reset on loadScene
-        setTimeScale(1);
-        SceneManager.LoadScene("LevelMenu");
+        SceneManager.LoadScene(level);
     }
 
     public void StartGame()
     {
         startButton.enabled = false;
         mainText.text = "" + secondsToStart;
-        //DEBUGGING
-        //GameStarted();
         InvokeRepeating("CountDown", 1, 1);
-        
     }
 
     void CountDown()
@@ -108,7 +60,7 @@ public class GameManager : MonoBehaviour {
         if (bestTime > 0) recordText.enabled = true;
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         if (player.enabled)
         {
@@ -119,24 +71,19 @@ public class GameManager : MonoBehaviour {
     void End()
     {
         player.enabled = false;
-        setTimeScale(0);
+        rigidBody.constraints = RigidbodyConstraints2D.FreezeAll;
         finalTime = (Time.time - initialTime);
         mainText.text = "Final! " + Math.Round(finalTime, 2);
-        if (finalTime < bestTime || bestTime == 0) SetRecord(currentLevel, finalTime);
+        if (finalTime < bestTime || bestTime == 0) SetRecord(level, finalTime);
     }
 
-    public float GetBestTime(int level)
+    public float GetBestTime(string level)
     {
         return PlayerPrefs.GetFloat(level + "_best", 0);
     }
 
-    public void SetRecord(int level, float record)
+    public void SetRecord(string level, float record)
     {
         PlayerPrefs.SetFloat(level + "_best", record);
-    }
-
-    void setTimeScale(int timeScale)
-    {
-        Time.timeScale = timeScale;
     }
 }

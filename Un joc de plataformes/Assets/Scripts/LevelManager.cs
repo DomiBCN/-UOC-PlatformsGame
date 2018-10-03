@@ -26,23 +26,20 @@ public class LevelManager : MonoBehaviour
         AddLevels();
     }
 
-    public void LoadLevel(string levelName)
+    public void LoadLevel(int level)
     {
-
-        SceneManager.LoadScene(levelName);
+        PlayerPrefs.SetInt("CurrentLevel", level);
+        SceneManager.LoadScene("LevelScene");
     }
 
-    private void AddLevels()
+    void AddLevels()
     {
         int x = -170;
         float offsetXmin = 0.08259365f;
         float offsetXmax = 0.2724749f;
-        string levelName = string.Empty;
 
-        for (int i = 1; i <= numberOfLevels; i++)
+        for (int i = 0; i < numberOfLevels; i++)
         {
-            levelName = "Level" + i;
-
             GameObject levelButton = Instantiate(levelButtonPrefab);
             levelButton.transform.SetParent(levelsPanel);
 
@@ -62,33 +59,38 @@ public class LevelManager : MonoBehaviour
             offsetXmax += offsetXincrement;
             offsetXmin += offsetXincrement;
 
-            FillListener(levelButton.GetComponentInChildren<Button>(), levelName);
+            FillListener(levelButton.GetComponentInChildren<Button>(), i);
             txtComponents = levelButton.GetComponentsInChildren<Text>();
             foreach (var component in txtComponents)
             {
                 if (component.name == "Level")
                 {
-                    component.text = i.ToString();
+                    component.text = (i+1).ToString();
                 }
                 else
                 {
-                    component.text += GetLevelBestTime(levelName).ToString();
+                    component.text += GetLevelBestTime(i).ToString();
                 }
             }
         }
     }
 
-    string GetLevelBestTime(string level)
+    string GetLevelBestTime(int level)
     {
         float score = PlayerPrefs.GetFloat(level + "_best", 0);
         return score == 0 ? "-" : score.ToString("##.##");
     }
 
-    void FillListener(Button button, string levelName)
+    void FillListener(Button button, int level)
     {
         button.onClick.AddListener(() =>
         {
-            LoadLevel(levelName);
+            LoadLevel(level);
         });
+    }
+
+    public void BackToStart()
+    {
+        SceneManager.LoadScene("InitialScene");
     }
 }
