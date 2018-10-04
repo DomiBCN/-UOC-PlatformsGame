@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,10 +17,12 @@ public class LevelManager : MonoBehaviour
     [SerializeField]
     Transform levelsPanel;
 
-    Text[] txtComponents;
+    Image[] stars = new Image[3];
+    float levelBestTime;
     float offsetXincrement = 0.32157525f;
     float offsetYmin = 0.225726f;
     float offsetYmax = 0.7635161f;
+    float[] ratings = new float[3];
 
     private void Start()
     {
@@ -49,7 +52,7 @@ public class LevelManager : MonoBehaviour
 
             levelButtonRect.anchorMax = new Vector2(offsetXmax, offsetYmax);
             levelButtonRect.anchorMin = new Vector2(offsetXmin, offsetYmin);
-            
+
             levelButtonRect.offsetMax = new Vector2(0, 0);
             levelButtonRect.offsetMin = new Vector2(0, 0);
 
@@ -60,25 +63,44 @@ public class LevelManager : MonoBehaviour
             offsetXmin += offsetXincrement;
 
             FillListener(levelButton.GetComponentInChildren<Button>(), i);
-            txtComponents = levelButton.GetComponentsInChildren<Text>();
-            foreach (var component in txtComponents)
+            levelButton.GetComponentInChildren<Text>().text = (i + 1).ToString();
+
+            levelBestTime = GetLevelBestTime(i);
+            stars = levelButton.GetComponentsInChildren<Image>().Where(s=> s.tag == "Star").ToArray();
+            ratings = GetLevelRatings(i);
+
+            //set level stars
+            SetLevelStars(ratings, stars, levelBestTime);
+            
+        }
+    }
+
+    void SetLevelStars(float[] ratings, Image[] stars, float levelBestTime)
+    {
+        for (var j = 0; j < ratings.Length; j++)
+        {
+            if (levelBestTime <= ratings[j])
             {
-                if (component.name == "Level")
-                {
-                    component.text = (i+1).ToString();
-                }
-                else
-                {
-                    component.text += GetLevelBestTime(i).ToString();
-                }
+                stars[j].enabled = true;
             }
         }
     }
 
-    string GetLevelBestTime(int level)
+    float GetLevelBestTime(int level)
     {
-        float score = PlayerPrefs.GetFloat(level + "_best", 0);
-        return score == 0 ? "-" : score.ToString("##.##");
+        return PlayerPrefs.GetFloat(level + "_best", 0);
+    }
+
+    //ratings needed to get each star
+    float[] GetLevelRatings(int level)
+    {
+        ratings = new float[3];
+        for (int i = 0; i < 3; i++)
+        {
+            ratings[i] = PlayerPrefs.GetFloat(level + "_star" + i, 0);
+        }
+
+        return ratings;
     }
 
     void FillListener(Button button, int level)
