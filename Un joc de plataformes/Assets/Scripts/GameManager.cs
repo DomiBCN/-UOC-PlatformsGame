@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
     GameObject pauseMenu;
     [SerializeField]
     GameObject finishMenu;
+    [SerializeField]
+    Button NextBtn;
 
     Text mainText;
     int currentLevel;
@@ -42,6 +44,12 @@ public class GameManager : MonoBehaviour
         GameObject levelPrefab = Instantiate(levels[currentLevel]);
         levelPrefab.transform.SetParent(levelContainer);
         timerText.enabled = false;
+
+        //if this is the last level -> hide "Next" button;
+        if (currentLevel == levels.Count -1)
+        {
+            NextBtn.GetComponent<Button>().interactable = false;
+        }
     }
 
     // Use this for initialization
@@ -127,6 +135,7 @@ public class GameManager : MonoBehaviour
 
         //set level stars
         SetLevelStars(ratings, stars, finalTime);
+        CheckUnblockLevel();
 
         finishMenu.SetActive(true);
     }
@@ -186,6 +195,15 @@ public class GameManager : MonoBehaviour
     //    mainText.text = "Final! " + Math.Round(finalTime, 2);
     //    if (finalTime < bestTime || bestTime == 0) SetRecord(currentLevel, finalTime);
     //}
+
+    //Checks if we need to unblock the next level(only if there ara more levels available && if we are playing the last level unblocked)
+    void CheckUnblockLevel()
+    {
+        if(currentLevel <= PlayerPrefs.GetInt("LevelReached", 0) && currentLevel < levels.Count-1)
+        {
+            PlayerPrefs.SetInt("LevelReached", currentLevel + 1);
+        }
+    }
 
     void SetTimeScale(int timeScale)
     {

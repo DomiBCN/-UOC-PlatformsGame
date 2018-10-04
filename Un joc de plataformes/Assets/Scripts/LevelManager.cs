@@ -7,22 +7,31 @@ using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
-
-
-    public int numberOfLevels = 3;
-
-
     [SerializeField]
-    GameObject levelButtonPrefab;
+    GameObject levelBtnPrefab;
+    [SerializeField]
+    GameObject levelBlockedBtnPrefab;
     [SerializeField]
     Transform levelsPanel;
 
+    int numberOfLevels;
+    int levelReached;
     Image[] stars = new Image[3];
     float levelBestTime;
+    int x = -170;
     float offsetXincrement = 0.32157525f;
+    float offsetXmin = 0.08259365f;
+    float offsetXmax = 0.2724749f;
     float offsetYmin = 0.225726f;
     float offsetYmax = 0.7635161f;
+
     float[] ratings = new float[3];
+
+    private void Awake()
+    {
+        numberOfLevels = PlayerPrefs.GetInt("NumOfLevels", 3);
+        levelReached = PlayerPrefs.GetInt("LevelReached", 0);
+    }
 
     private void Start()
     {
@@ -37,41 +46,62 @@ public class LevelManager : MonoBehaviour
 
     void AddLevels()
     {
-        int x = -170;
-        float offsetXmin = 0.08259365f;
-        float offsetXmax = 0.2724749f;
+
 
         for (int i = 0; i < numberOfLevels; i++)
         {
-            GameObject levelButton = Instantiate(levelButtonPrefab);
-            levelButton.transform.SetParent(levelsPanel);
+            GameObject levelButton = new GameObject();
+            if (i > levelReached)
+            {
+                levelButton = Instantiate(levelBlockedBtnPrefab);
+                SetLevelButton(levelButton, false);
+            }
+            else
+            {
+                levelButton = Instantiate(levelBtnPrefab);
+                SetLevelButton(levelButton, true, i);
+            }
+        }
+    }
 
-            RectTransform levelButtonRect = levelButton.GetComponent<RectTransform>();
+    void SetLevelButton(GameObject levelButton, bool isUnblocked, int currentLevel = 0)
+    {
+        levelButton.transform.SetParent(levelsPanel);
 
-            levelButtonRect.localPosition = new Vector3(0, 0, 0);
+        RectTransform levelButtonRect = levelButton.GetComponent<RectTransform>();
 
-            levelButtonRect.anchorMax = new Vector2(offsetXmax, offsetYmax);
-            levelButtonRect.anchorMin = new Vector2(offsetXmin, offsetYmin);
+        levelButtonRect.localPosition = new Vector3(0, 0, 0);
 
-            levelButtonRect.offsetMax = new Vector2(0, 0);
-            levelButtonRect.offsetMin = new Vector2(0, 0);
+        levelButtonRect.anchorMax = new Vector2(offsetXmax, offsetYmax);
+        levelButtonRect.anchorMin = new Vector2(offsetXmin, offsetYmin);
 
-            levelButtonRect.localScale = new Vector3(1, 1, 1);
+        levelButtonRect.offsetMax = new Vector2(0, 0);
+        levelButtonRect.offsetMin = new Vector2(0, 0);
 
-            x += 170;
-            offsetXmax += offsetXincrement;
-            offsetXmin += offsetXincrement;
+        levelButtonRect.localScale = new Vector3(1, 1, 1);
 
-            FillListener(levelButton.GetComponentInChildren<Button>(), i);
-            levelButton.GetComponentInChildren<Text>().text = (i + 1).ToString();
+        x += 170;
+        offsetXmax += offsetXincrement;
+        offsetXmin += offsetXincrement;
 
-            levelBestTime = GetLevelBestTime(i);
-            stars = levelButton.GetComponentsInChildren<Image>().Where(s=> s.tag == "Star").ToArray();
-            ratings = GetLevelRatings(i);
+        if (isUnblocked)
+        {
+            FillListener(levelButton.GetComponentInChildren<Button>(), currentLevel);
+            levelButton.GetComponentInChildren<Text>().text = (currentLevel + 1).ToString();
 
-            //set level stars
-            SetLevelStars(ratings, stars, levelBestTime);
-            
+            levelBestTime = GetLevelBestTime(currentLevel);
+            stars = levelButton.GetComponentsInChildren<Image>().Where(s => s.tag == "Star").ToArray();
+            ratings = GetLevelRatings(currentLevel);
+
+            //if 'levelBestTime' != 0(to check if at least has been complete 1 time) set the amount of stars the user has got
+            if (levelBestTime != 0)
+            {
+                SetLevelStars(ratings, stars, levelBestTime);
+            }
+        }
+        else
+        {
+            levelButton.GetComponent<Button>().interactable = false;
         }
     }
 

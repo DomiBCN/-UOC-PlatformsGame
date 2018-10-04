@@ -2409,12 +2409,13 @@ MonoBehaviour:
   recordText: {fileID: 775762889}
   startButton: {fileID: 1105151038}
   timerText: {fileID: 67034220}
-  level: Level1
   levelContainer: {fileID: 1880405949}
   levels:
   - {fileID: 1626867478744980, guid: ac8c394a54acc8a4b9f3da61f4780910, type: 2}
+  - {fileID: 1626867478744980, guid: ac8c394a54acc8a4b9f3da61f4780910, type: 2}
   pauseMenu: {fileID: 177141957}
   finishMenu: {fileID: 1989299113}
+  NextBtn: {fileID: 304194485}
 --- !u!4 &1481355244
 Transform:
   m_ObjectHideFlags: 0

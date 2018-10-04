@@ -504,8 +504,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7212622a65369c3438932e566cc86ae4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfLevels: 3
-  levelButtonPrefab: {fileID: 1126032409862656, guid: 7cdd69dc223783a43acc070dc054b789,
+  levelBtnPrefab: {fileID: 1126032409862656, guid: 7cdd69dc223783a43acc070dc054b789,
+    type: 2}
+  levelBlockedBtnPrefab: {fileID: 1182996012937056, guid: 4ebf289d711d15548aff861707538dd5,
     type: 2}
   levelsPanel: {fileID: 2123030756}
 --- !u!4 &1579691167
