@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,7 +7,7 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-
+    
     [SerializeField]
     PlayerController player;
     [SerializeField]
@@ -35,18 +34,29 @@ public class GameManager : MonoBehaviour
     float initialTime;
     float bestTime;
     float finalTime;
-    float[] ratings = new float[3];
     Image[] stars = new Image[3];
+
+    List<RatingsManager.LevelTimmings> levelTimmings;
+    RatingsManager.LevelTimmings currentLevelTimmings;
 
     private void Awake()
     {
-        currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+        currentLevel = PlayerPrefsPersister.GetCurrentLevel();
+
+        levelTimmings = RatingsManager.levelTimmings;
+        if (levelTimmings == null || levelTimmings.Count == 0)
+        {
+            RatingsManager.FillLevels();
+        }
+        currentLevelTimmings = levelTimmings.Where(l => l.LevelId == currentLevel).FirstOrDefault();
+
+        //add level prefab
         GameObject levelPrefab = Instantiate(levels[currentLevel]);
         levelPrefab.transform.SetParent(levelContainer);
         timerText.enabled = false;
 
         //if this is the last level -> hide "Next" button;
-        if (currentLevel == levels.Count -1)
+        if (currentLevel == levels.Count - 1)
         {
             NextBtn.GetComponent<Button>().interactable = false;
         }
@@ -59,7 +69,7 @@ public class GameManager : MonoBehaviour
         player.levelEnd += End;
         player.enabled = false;
         mainText = startButton.GetComponentInChildren<Text>();
-        bestTime = GetBestTime(currentLevel);
+        bestTime = PlayerPrefsPersister.GetLevelBestTime(currentLevel);
         if (bestTime > 0) { recordText.text = "Best time: " + bestTime.ToString("##.##") + " s"; } else { recordText.enabled = false; }
         //DEBUGGING
         //StartGame();
@@ -128,27 +138,15 @@ public class GameManager : MonoBehaviour
     {
         SetTimeScale(0);
         finalTime = (Time.time - initialTime);
-        if (finalTime < bestTime || bestTime == 0) SetRecord(currentLevel, finalTime);
+        if (finalTime < bestTime || bestTime == 0) PlayerPrefsPersister.SetRecord(currentLevel, finalTime);
 
         stars = finishMenu.GetComponentsInChildren<Image>().Where(s => s.tag == "Star").ToArray();
-        ratings = GetLevelRatings(currentLevel);
 
         //set level stars
-        SetLevelStars(ratings, stars, finalTime);
+        RatingsManager.SetLevelStars(currentLevelTimmings.Timmings, stars, finalTime);
         CheckUnblockLevel();
 
         finishMenu.SetActive(true);
-    }
-
-    void SetLevelStars(float[] ratings, Image[] stars, float levelBestTime)
-    {
-        for (var j = 0; j < ratings.Length; j++)
-        {
-            if (levelBestTime <= ratings[j])
-            {
-                stars[j].enabled = true;
-            }
-        }
     }
 
     #endregion
@@ -182,52 +180,23 @@ public class GameManager : MonoBehaviour
     {
         //If we load the next level, we need to set timeScale to 1. It's value doesn't reset on loadScene
         SetTimeScale(1);
-        PlayerPrefs.SetInt("CurrentLevel", currentLevel + 1);
+        PlayerPrefsPersister.SetCurrentLevel(currentLevel + 1);
         SceneManager.LoadScene("LevelScene");
     }
     #endregion
     #endregion
 
-    //void End()
-    //{
-    //    SetTimeScale(0);
-    //    finalTime = (Time.time - initialTime);
-    //    mainText.text = "Final! " + Math.Round(finalTime, 2);
-    //    if (finalTime < bestTime || bestTime == 0) SetRecord(currentLevel, finalTime);
-    //}
-
     //Checks if we need to unblock the next level(only if there ara more levels available && if we are playing the last level unblocked)
     void CheckUnblockLevel()
     {
-        if(currentLevel <= PlayerPrefs.GetInt("LevelReached", 0) && currentLevel < levels.Count-1)
+        if (currentLevel <= PlayerPrefsPersister.GetLevelReached() && currentLevel < levels.Count - 1)
         {
-            PlayerPrefs.SetInt("LevelReached", currentLevel + 1);
+            PlayerPrefsPersister.SetLevelReached(currentLevel + 1);
         }
     }
 
     void SetTimeScale(int timeScale)
     {
         Time.timeScale = timeScale;
-    }
-
-    public float GetBestTime(int level)
-    {
-        return PlayerPrefs.GetFloat(level + "_best", 0);
-    }
-
-    public void SetRecord(int level, float record)
-    {
-        PlayerPrefs.SetFloat(level + "_best", record);
-    }
-
-    //ratings needed to get each star
-    float[] GetLevelRatings(int level)
-    {
-        ratings = new float[3];
-        for (int i = 0; i < 3; i++)
-        {
-            ratings[i] = PlayerPrefs.GetFloat(level + "_star" + i, 0);
-        }
-        return ratings;
     }
 }

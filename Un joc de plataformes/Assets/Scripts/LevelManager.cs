@@ -7,14 +7,14 @@ using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
+    
     [SerializeField]
     GameObject levelBtnPrefab;
     [SerializeField]
     GameObject levelBlockedBtnPrefab;
     [SerializeField]
     Transform levelsPanel;
-
-    int numberOfLevels;
+    
     int levelReached;
     Image[] stars = new Image[3];
     float levelBestTime;
@@ -25,12 +25,17 @@ public class LevelManager : MonoBehaviour
     float offsetYmin = 0.225726f;
     float offsetYmax = 0.7635161f;
 
-    float[] ratings = new float[3];
-
+    List<RatingsManager.LevelTimmings> levelTimmings;
+    
     private void Awake()
     {
-        numberOfLevels = PlayerPrefs.GetInt("NumOfLevels", 3);
-        levelReached = PlayerPrefs.GetInt("LevelReached", 0);
+        levelTimmings = RatingsManager.levelTimmings;
+        if (levelTimmings == null || levelTimmings.Count == 0)
+        {
+            RatingsManager.FillLevels();
+        }
+        levelTimmings.OrderBy(l => l.LevelId);
+        levelReached = PlayerPrefsPersister.GetLevelReached();
     }
 
     private void Start()
@@ -40,18 +45,16 @@ public class LevelManager : MonoBehaviour
 
     public void LoadLevel(int level)
     {
-        PlayerPrefs.SetInt("CurrentLevel", level);
+        PlayerPrefsPersister.SetCurrentLevel(level);
         SceneManager.LoadScene("LevelScene");
     }
 
     void AddLevels()
     {
-
-
-        for (int i = 0; i < numberOfLevels; i++)
+        foreach (var level in levelTimmings)
         {
             GameObject levelButton = new GameObject();
-            if (i > levelReached)
+            if (level.LevelId > levelReached)
             {
                 levelButton = Instantiate(levelBlockedBtnPrefab);
                 SetLevelButton(levelButton, false);
@@ -59,15 +62,16 @@ public class LevelManager : MonoBehaviour
             else
             {
                 levelButton = Instantiate(levelBtnPrefab);
-                SetLevelButton(levelButton, true, i);
+                SetLevelButton(levelButton, true, level);
             }
         }
     }
 
-    void SetLevelButton(GameObject levelButton, bool isUnblocked, int currentLevel = 0)
+    void SetLevelButton(GameObject levelButton, bool isUnblocked, RatingsManager.LevelTimmings level = null)
     {
         levelButton.transform.SetParent(levelsPanel);
 
+        //Setting position && anchors
         RectTransform levelButtonRect = levelButton.GetComponent<RectTransform>();
 
         levelButtonRect.localPosition = new Vector3(0, 0, 0);
@@ -86,17 +90,16 @@ public class LevelManager : MonoBehaviour
 
         if (isUnblocked)
         {
-            FillListener(levelButton.GetComponentInChildren<Button>(), currentLevel);
-            levelButton.GetComponentInChildren<Text>().text = (currentLevel + 1).ToString();
+            FillListener(levelButton.GetComponentInChildren<Button>(), level.LevelId);
+            levelButton.GetComponentInChildren<Text>().text = (level.LevelId + 1).ToString();
 
-            levelBestTime = GetLevelBestTime(currentLevel);
+            levelBestTime = PlayerPrefsPersister.GetLevelBestTime(level.LevelId);
             stars = levelButton.GetComponentsInChildren<Image>().Where(s => s.tag == "Star").ToArray();
-            ratings = GetLevelRatings(currentLevel);
 
-            //if 'levelBestTime' != 0(to check if at least has been complete 1 time) set the amount of stars the user has got
+            //if 'levelBestTime' != 0(to check if at least has been completed 1 time) set the amount of stars the user has got
             if (levelBestTime != 0)
             {
-                SetLevelStars(ratings, stars, levelBestTime);
+                RatingsManager.SetLevelStars(level.Timmings, stars, levelBestTime);
             }
         }
         else
@@ -104,35 +107,7 @@ public class LevelManager : MonoBehaviour
             levelButton.GetComponent<Button>().interactable = false;
         }
     }
-
-    void SetLevelStars(float[] ratings, Image[] stars, float levelBestTime)
-    {
-        for (var j = 0; j < ratings.Length; j++)
-        {
-            if (levelBestTime <= ratings[j])
-            {
-                stars[j].enabled = true;
-            }
-        }
-    }
-
-    float GetLevelBestTime(int level)
-    {
-        return PlayerPrefs.GetFloat(level + "_best", 0);
-    }
-
-    //ratings needed to get each star
-    float[] GetLevelRatings(int level)
-    {
-        ratings = new float[3];
-        for (int i = 0; i < 3; i++)
-        {
-            ratings[i] = PlayerPrefs.GetFloat(level + "_star" + i, 0);
-        }
-
-        return ratings;
-    }
-
+    
     void FillListener(Button button, int level)
     {
         button.onClick.AddListener(() =>
