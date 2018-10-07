@@ -1,17 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     [SerializeField]
-     float rotationSpeed = 50;
+    float rotationSpeed = 50;
     [SerializeField]
-     float forwardSpeed = 50;
+    float forwardSpeed = 50;
     [SerializeField]
     float backwardsSpeed = 20;
     [SerializeField]
     GameObject box;
+
+    [SerializeField]
+    AudioClip motoIdle;
+    [SerializeField]
+    AudioClip motoRun;
+
+    [SerializeField]
+    Button motoSoundBtn;
+    [SerializeField]
+    Sprite soundOn;
+    [SerializeField]
+    Sprite soundOff;
 
 
     public delegate void eliminatedDelegate();
@@ -29,6 +42,7 @@ public class PlayerController : MonoBehaviour
     WheelJoint2D backWheelJoint;
     #endregion
 
+    AudioSource motoEffect;
     Rigidbody2D rigidBody;
     float wheelRadius;
     Collider2D[] overlapColliders = new Collider2D[1];
@@ -37,6 +51,9 @@ public class PlayerController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        motoEffect = GetComponent<AudioSource>();
+        UpdateAudioMotoStatus(PlayerPrefsPersister.GetAudioMotoStatus());
+
         rigidBody = GetComponent<Rigidbody2D>();
         #region ORIGINAL
         //wheelRadius = rigidBody.GetComponent<CircleCollider2D>().radius * 1.1f;
@@ -74,7 +91,7 @@ public class PlayerController : MonoBehaviour
         float movement = 0;
         if (isLeft) { movement = 1 * backwardsSpeed; } else { movement = -1 * forwardSpeed; }
 
-        JointMotor2D motor = new JointMotor2D { motorSpeed = movement , maxMotorTorque = 3000 };
+        JointMotor2D motor = new JointMotor2D { motorSpeed = movement, maxMotorTorque = 3000 };
         SetMotor(motor);
     }
 
@@ -188,8 +205,9 @@ public class PlayerController : MonoBehaviour
         {
             if (eliminated != null) { eliminated(); }
         }
-        else if(collision.gameObject.tag.CompareTo("BoxTrigger") != 0)
+        else if (collision.gameObject.tag.CompareTo("BoxTrigger") != 0)
         {
+            motoEffect.clip = new AudioClip();
             if (levelEnd != null) { levelEnd(); }
         }
         else
@@ -219,11 +237,65 @@ public class PlayerController : MonoBehaviour
     void UseMotor(bool use)
     {
         backWheelJoint.useMotor = use;
+
+        //Transition beetween 'idle' sound and 'run' sound
+        if (use)
+        {
+            //UseMotor is called every update, but we want to change the clip only if there's been a change from the previous update 
+            if (motoEffect.clip != motoRun && motoEffect.enabled)
+            {
+                SetAudioClip(motoRun, 1);
+            }
+        }
+        else
+        {
+            //UseMotor is called every update, but we want to change the clip only if there's been a change from the previous update 
+            if (motoEffect.clip != motoIdle && motoEffect.enabled)
+            {
+                SetAudioClip(motoIdle, 0.6f);
+            }
+        }
     }
 
     void SetMotor(JointMotor2D motor)
     {
         backWheelJoint.motor = motor;
+    }
+
+    #endregion
+
+    #region Sound toggle
+    public void ToggleSound()
+    {
+        if (enabled)
+        {
+            bool isOn = PlayerPrefsPersister.GetAudioMotoStatus();
+
+            if (!isOn)
+            {
+                isOn = true;
+                PlayerPrefsPersister.SetAudioMotoStatus(isOn.ToString());
+            }
+            else
+            {
+                isOn = false;
+                PlayerPrefsPersister.SetAudioMotoStatus(isOn.ToString());
+            }
+            UpdateAudioMotoStatus(isOn);
+        }
+    }
+
+    void SetAudioClip(AudioClip clip, float volume)
+    {
+        motoEffect.clip = clip;
+        motoEffect.volume = volume;
+        motoEffect.Play();
+    }
+
+    void UpdateAudioMotoStatus(bool isOn)
+    {
+        motoEffect.enabled = isOn;
+        motoSoundBtn.GetComponent<Image>().sprite = isOn ? soundOn : soundOff;
     }
     #endregion
 }

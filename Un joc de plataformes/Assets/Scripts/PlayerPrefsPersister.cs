@@ -19,6 +19,16 @@ public class PlayerPrefsPersister
         return PlayerPrefs.GetInt("LevelReached", 0);
     }
 
+    public static bool GetAudioStatus()
+    {
+        return bool.Parse(PlayerPrefs.GetString("AudioStatus", "false"));
+    }
+
+    public static bool GetAudioMotoStatus()
+    {
+        return bool.Parse(PlayerPrefs.GetString("AudioMotoStatus", "false"));
+    }
+
     public static void SetCurrentLevel(int level)
     {
         PlayerPrefs.SetInt("CurrentLevel", level);
@@ -32,5 +42,15 @@ public class PlayerPrefsPersister
     public static void SetRecord(int level, float record)
     {
         PlayerPrefs.SetFloat(level + "_best", record);
+    }
+
+    public static void SetAudioStatus(string status)
+    {
+        PlayerPrefs.SetString("AudioStatus", status);
+    }
+
+    public static void SetAudioMotoStatus(string status)
+    {
+        PlayerPrefs.SetString("AudioMotoStatus", status);
     }
 }

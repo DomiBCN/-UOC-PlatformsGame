@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     Text finishMenuTime;
     [SerializeField]
     Text finishMenuRecord;
-
+    
     [SerializeField]
     Button NextBtn;
 
@@ -48,6 +48,12 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        //Disable music
+        if (Sound.instance != null)
+        {
+            Sound.instance.GetComponent<AudioSource>().enabled = false;
+        }
+
         currentLevel = PlayerPrefsPersister.GetCurrentLevel();
 
         levelTimmings = RatingsManager.levelTimmings;

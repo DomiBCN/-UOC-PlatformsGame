@@ -36,6 +36,11 @@ public class LevelManager : MonoBehaviour
         }
         levelTimmings.OrderBy(l => l.LevelId);
         levelReached = PlayerPrefsPersister.GetLevelReached();
+
+        //if(!Sound.instance.GetComponent<AudioSource>().enabled && PlayerPrefsPersister.GetAudioStatus())
+        //{
+        //    Sound.instance.GetComponent<AudioSource>().enabled = true;
+        //}
     }
 
     private void Start()
