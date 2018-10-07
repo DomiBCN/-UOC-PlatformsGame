@@ -21,12 +21,12 @@ public class PlayerPrefsPersister
 
     public static bool GetAudioStatus()
     {
-        return bool.Parse(PlayerPrefs.GetString("AudioStatus", "false"));
+        return bool.Parse(PlayerPrefs.GetString("AudioStatus", "true"));
     }
 
     public static bool GetAudioMotoStatus()
     {
-        return bool.Parse(PlayerPrefs.GetString("AudioMotoStatus", "false"));
+        return bool.Parse(PlayerPrefs.GetString("AudioMotoStatus", "true"));
     }
 
     public static void SetCurrentLevel(int level)

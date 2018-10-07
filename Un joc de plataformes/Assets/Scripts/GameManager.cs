@@ -31,7 +31,13 @@ public class GameManager : MonoBehaviour
     Text finishMenuTime;
     [SerializeField]
     Text finishMenuRecord;
-    
+    [SerializeField]
+    AudioSource audioWin;
+    [SerializeField]
+    Image[] stars = new Image[3];
+    [SerializeField]
+    Text[] starTexts = new Text[3];
+
     [SerializeField]
     Button NextBtn;
 
@@ -41,7 +47,7 @@ public class GameManager : MonoBehaviour
     float initialTime;
     float bestTime;
     float finalTime;
-    Image[] stars = new Image[3];
+    
 
     List<RatingsManager.LevelTimmings> levelTimmings;
     RatingsManager.LevelTimmings currentLevelTimmings;
@@ -157,15 +163,16 @@ public class GameManager : MonoBehaviour
             PlayerPrefsPersister.SetRecord(currentLevel, finalTime);
             bestTime = finalTime;
         }
-
-        stars = finishMenu.GetComponentsInChildren<Image>().Where(s => s.tag == "Star").ToArray();
+        
         //set level stars
-        RatingsManager.SetLevelStars(currentLevelTimmings.Timmings, stars, finalTime);
+        RatingsManager.SetLevelStars(currentLevelTimmings.Timmings, stars, finalTime, starTexts);
         finishMenuTime.text = finalTime.ToString("##.##") + "s";
         finishMenuRecord.text = bestTime.ToString("##.##") + "s";
 
         CheckUnblockLevel();
 
+        audioWin.enabled = true;
+        audioWin.Play();
         finishMenu.SetActive(true);
     }
 
