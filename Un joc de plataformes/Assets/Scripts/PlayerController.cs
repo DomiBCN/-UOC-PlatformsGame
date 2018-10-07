@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
-    public float rotationSpeed = 50;
-    public float linealSpeed = 50;
+    [SerializeField]
+     float rotationSpeed = 50;
+    [SerializeField]
+     float forwardSpeed = 50;
+    [SerializeField]
+    float backwardsSpeed = 20;
+    [SerializeField]
+    GameObject box;
 
 
     public delegate void eliminatedDelegate();
@@ -66,10 +71,10 @@ public class PlayerController : MonoBehaviour
     #region JOINTS
     void Movement(bool isLeft)
     {
-        int movement = 0;
-        if (isLeft) { movement = 1; } else { movement = -1; }
+        float movement = 0;
+        if (isLeft) { movement = 1 * backwardsSpeed; } else { movement = -1 * forwardSpeed; }
 
-        JointMotor2D motor = new JointMotor2D { motorSpeed = movement * linealSpeed, maxMotorTorque = 2000 };
+        JointMotor2D motor = new JointMotor2D { motorSpeed = movement , maxMotorTorque = 3000 };
         SetMotor(motor);
     }
 
@@ -92,8 +97,8 @@ public class PlayerController : MonoBehaviour
     {
         //allow us to use the keyboard
         #region keyboard control
-        UpdateKeyboardAction(KeyCode.RightArrow);
-        UpdateKeyboardAction(KeyCode.LeftArrow);
+        UpdateKeyboardAction(KeyCode.D);
+        UpdateKeyboardAction(KeyCode.A);
         UpdateKeyboardAction(KeyCode.UpArrow);
         UpdateKeyboardAction(KeyCode.DownArrow);
         #endregion
@@ -103,11 +108,11 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         #region ORIGINAL
-        //if (actions.Contains(KeyCode.RightArrow) && TouchingGround()) { MoveRight(); }
-        //if (actions.Contains(KeyCode.LeftArrow) && TouchingGround()) { MoveLeft(); }
+        //if (actions.Contains(KeyCode.D) && TouchingGround()) { MoveRight(); }
+        //if (actions.Contains(KeyCode.A) && TouchingGround()) { MoveLeft(); }
         #endregion
         #region JOINTS
-        if (actions.Contains(KeyCode.RightArrow) || actions.Contains(KeyCode.LeftArrow)) { UseMotor(true); Movement(actions.Contains(KeyCode.LeftArrow)); } else { UseMotor(false); }
+        if (actions.Contains(KeyCode.D) || actions.Contains(KeyCode.A)) { UseMotor(true); Movement(actions.Contains(KeyCode.A)); } else { UseMotor(false); }
         #endregion
         if (actions.Contains(KeyCode.UpArrow)) { RotateRight(); }
         if (actions.Contains(KeyCode.DownArrow)) { RotateLeft(); }
@@ -138,12 +143,12 @@ public class PlayerController : MonoBehaviour
 
     public void MoveLeftDown()
     {
-        UpdateActionDown(KeyCode.LeftArrow);
+        UpdateActionDown(KeyCode.A);
     }
 
     public void MoveRightDown()
     {
-        UpdateActionDown(KeyCode.RightArrow);
+        UpdateActionDown(KeyCode.D);
     }
 
     public void RotateLeftDown()
@@ -158,12 +163,12 @@ public class PlayerController : MonoBehaviour
 
     public void MoveLeftUp()
     {
-        UpdateActionUp(KeyCode.LeftArrow);
+        UpdateActionUp(KeyCode.A);
     }
 
     public void MoveRightUp()
     {
-        UpdateActionUp(KeyCode.RightArrow);
+        UpdateActionUp(KeyCode.D);
     }
 
     public void RotateLeftUp()
@@ -179,14 +184,24 @@ public class PlayerController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag.CompareTo("Finish") != 0 && collision.gameObject.tag.CompareTo("KillZone") != 0)
+        if (collision.gameObject.tag.CompareTo("Finish") != 0 && collision.gameObject.tag.CompareTo("BoxTrigger") != 0)
         {
             if (eliminated != null) { eliminated(); }
         }
-        else
+        else if(collision.gameObject.tag.CompareTo("BoxTrigger") != 0)
         {
             if (levelEnd != null) { levelEnd(); }
         }
+        else
+        {
+            AddBox();
+        }
+    }
+
+    void AddBox()
+    {
+        GameObject fallingBox = Instantiate(box);
+        fallingBox.transform.position = new Vector2(transform.position.x, transform.position.y + 5);
     }
 
     #region ORIGINAL

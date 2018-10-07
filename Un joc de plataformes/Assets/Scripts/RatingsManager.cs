@@ -24,7 +24,7 @@ public class RatingsManager {
 
     public static void FillLevels()
     {
-        levelTimmings.Add(new RatingsManager.LevelTimmings()
+        levelTimmings.Add(new LevelTimmings()
         {
             LevelId = 0,
             Timmings = new List<StarTimming>()
@@ -35,7 +35,7 @@ public class RatingsManager {
             }
         });
 
-        levelTimmings.Add(new RatingsManager.LevelTimmings()
+        levelTimmings.Add(new LevelTimmings()
         {
             LevelId = 1,
             Timmings = new List<StarTimming>()
@@ -46,7 +46,7 @@ public class RatingsManager {
             }
         });
 
-        levelTimmings.Add(new RatingsManager.LevelTimmings()
+        levelTimmings.Add(new LevelTimmings()
         {
             LevelId = 2,
             Timmings = new List<StarTimming>()
@@ -58,7 +58,7 @@ public class RatingsManager {
         });
     }
 
-    public static void SetLevelStars(List<RatingsManager.StarTimming> timmings, Image[] stars, float levelTime)
+    public static void SetLevelStars(List<StarTimming> timmings, Image[] stars, float levelTime)
     {
         foreach (var timming in timmings)
         {

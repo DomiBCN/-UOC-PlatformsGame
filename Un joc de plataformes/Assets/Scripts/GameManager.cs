@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    
+
     [SerializeField]
     PlayerController player;
     [SerializeField]
@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     Text timerText;
     [SerializeField]
+    GameObject moveTutorial;
+    [SerializeField]
     Transform levelContainer;
     [SerializeField]
     List<GameObject> levels = new List<GameObject>();
@@ -25,6 +27,11 @@ public class GameManager : MonoBehaviour
     GameObject pauseMenu;
     [SerializeField]
     GameObject finishMenu;
+    [SerializeField]
+    Text finishMenuTime;
+    [SerializeField]
+    Text finishMenuRecord;
+
     [SerializeField]
     Button NextBtn;
 
@@ -101,6 +108,7 @@ public class GameManager : MonoBehaviour
             CancelInvoke();
             GameStarted();
             startButton.SetActive(false);
+            moveTutorial.SetActive(false);
             recordText.enabled = false;
             timerText.enabled = true;
         }
@@ -138,12 +146,18 @@ public class GameManager : MonoBehaviour
     {
         SetTimeScale(0);
         finalTime = (Time.time - initialTime);
-        if (finalTime < bestTime || bestTime == 0) PlayerPrefsPersister.SetRecord(currentLevel, finalTime);
+        if (finalTime < bestTime || bestTime == 0)
+        {
+            PlayerPrefsPersister.SetRecord(currentLevel, finalTime);
+            bestTime = finalTime;
+        }
 
         stars = finishMenu.GetComponentsInChildren<Image>().Where(s => s.tag == "Star").ToArray();
-
         //set level stars
         RatingsManager.SetLevelStars(currentLevelTimmings.Timmings, stars, finalTime);
+        finishMenuTime.text = finalTime.ToString("##.##") + "s";
+        finishMenuRecord.text = bestTime.ToString("##.##") + "s";
+
         CheckUnblockLevel();
 
         finishMenu.SetActive(true);
