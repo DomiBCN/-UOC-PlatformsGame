@@ -18,7 +18,7 @@ También se ha añadido música al juego y sonidos al motorista.
   - https://assetstore.unity.com/packages/2d/environments/free-platform-game-assets-85838
 - Background -> https://opengameart.org/content/scrolling-desert-backgrounds
 - Entorno: 
-  -https://assetstore.unity.com/packages/2d/environments/free-platform-game-assets-85838
-  -https://opengameart.org/content/platform-tileset-nature
+  - https://assetstore.unity.com/packages/2d/environments/free-platform-game-assets-85838
+  - https://opengameart.org/content/platform-tileset-nature
 - Música -> https://assetstore.unity.com/packages/audio/music/fantasy-tavern-music-free-pack-118847
 - Sonidos -> https://freesound.org/
